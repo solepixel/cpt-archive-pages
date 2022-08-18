@@ -3,7 +3,7 @@
  * Plugin Name: CPT Archive Pages
  * Plugin URI:  https://b7s.co
  * Description: Use pages for custom post type archives.
- * Version:     0.1.2
+ * Version:     0.1.3
  * Author:      Briantics, Inc.
  * Author URI:  https://b7s.co
  * Text Domain: cpt-archive-pages
@@ -14,12 +14,12 @@
  * @package CPTArchivePages
  */
 
-define( 'CPTAP_VERSION', '0.1.2' );
+define( 'CPTAP_VERSION', '0.1.3' );
 define( 'CPTAP_FILE', __FILE__ );
 define( 'CPTAP_PATH', plugin_dir_path( CPTAP_FILE ) );
 define( 'CPTAP_URL', plugin_dir_url( CPTAP_FILE ) );
 
-require CPTAP_PATH . '/lib/plugin-update-checker/plugin-update-checker.php';
+require_once CPTAP_PATH . '/lib/plugin-update-checker/plugin-update-checker.php';
 
 $updater = Puc_v4_Factory::buildUpdateChecker(
 	'https://github.com/solepixel/cpt-archive-pages',
@@ -27,6 +27,9 @@ $updater = Puc_v4_Factory::buildUpdateChecker(
 	'cpt-archive-pages'
 );
 $updater->setBranch( 'main' );
+
+// Additional plugin files.
+require_once CPTAP_PATH . '/inc/yoast.php';
 
 /**
  * Supported Post Archives for Post States
@@ -318,125 +321,6 @@ add_filter(
 		}
 
 		return get_the_title( $page );
-	},
-	10,
-	2
-);
-
-add_filter(
-	'wpseo_frontend_presentation',
-	function( $presentation, $context ) {
-		if ( ! $context || empty( $context->page_type ) || 'Post_Type_Archive' !== $context->page_type ) {
-			return $presentation;
-		}
-
-		if ( ! isset( $presentation->source ) || ! is_array( $presentation->source ) || empty( $presentation->source['post_type'] ) ) {
-			return $presentation;
-		}
-
-		$page = cptap_get_archive_page( $presentation->source['post_type'] );
-
-		if ( ! $page ) {
-			return $presentation;
-		}
-
-		$seo_title        = get_post_meta( $page, '_yoast_wpseo_title', true );
-		$fb_title         = get_post_meta( $page, '_yoast_wpseo_opengraph-title', true );
-		$twitter_title    = get_post_meta( $page, '_yoast_wpseo_twitter-title', true );
-		$fb_image         = get_post_meta( $page, '_yoast_wpseo_opengraph-image', true );
-		$fb_image_id      = get_post_meta( $page, '_yoast_wpseo_opengraph-image-id', true );
-		$twitter_image    = get_post_meta( $page, '_yoast_wpseo_twitter-image', true );
-		$twitter_image_id = get_post_meta( $page, '_yoast_wpseo_twitter-image-id', true );
-
-		// Adjust Titles.
-		if ( $seo_title ) {
-			$presentation->title = $seo_title;
-		}
-		if ( $fb_title ) {
-			$presentation->open_graph_title = $fb_title;
-		}
-		if ( $twitter_title ) {
-			$presentation->twitter_title = $twitter_title;
-		}
-
-		// Adjust Social Images.
-		if ( $fb_image ) {
-			$presentation->open_graph_image = $fb_image;
-		}
-		if ( $fb_image_id ) {
-			$presentation->open_graph_image_id = $fb_image_id;
-		}
-		if ( $twitter_image ) {
-			$presentation->twitter_image = $twitter_image;
-		}
-		if ( $twitter_image_id ) {
-			$presentation->twitter_image_id = $twitter_image_id;
-		}
-
-		return $presentation;
-	},
-	10,
-	2
-);
-
-add_filter(
-	'Yoast\WP\SEO\open_graph_description_post-type-archive',
-	function( $description, $post_type ) {
-		$page = cptap_get_archive_page( $post_type );
-
-		if ( ! $page ) {
-			return $description;
-		}
-
-		$seo_description = get_post_meta( $page, '_yoast_wpseo_metadesc', true );
-
-		if ( ! $seo_description ) {
-			return $description;
-		}
-
-		return $seo_description;
-	},
-	10,
-	2
-);
-
-add_filter(
-	'Yoast\WP\SEO\open_graph_image_post-type-archive',
-	function( $image, $post_type ) {
-		$page = cptap_get_archive_page( $post_type );
-
-		if ( ! $page ) {
-			return $image;
-		}
-
-		$seo_image = get_the_post_thumbnail_url( $page );
-
-		if ( ! $seo_image ) {
-			return $image;
-		}
-
-		return $seo_image;
-	},
-	10,
-	2
-);
-
-add_filter(
-	'Yoast\WP\SEO\open_graph_image_id_post-type-archive',
-	function( $image_id, $post_type ) {
-		$page = cptap_get_archive_page( $post_type );
-
-		if ( ! $page ) {
-			return $image_id;
-		}
-
-		$seo_image_id = get_post_thumbnail_id( $page );
-
-		if ( ! $seo_image_id ) {
-			return $image_id;
-		}
-
-		return $seo_image_id;
 	},
 	10,
 	2
