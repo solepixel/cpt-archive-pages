@@ -3,7 +3,7 @@
  * Plugin Name: CPT Archive Pages
  * Plugin URI:  https://b7s.co
  * Description: Use pages for custom post type archives.
- * Version:     0.1.0
+ * Version:     0.1.1
  * Author:      Briantics, Inc.
  * Author URI:  https://b7s.co
  * Text Domain: cpt-archive-pages
@@ -14,7 +14,7 @@
  * @package CPTArchivePages
  */
 
-define( 'CPTAP_VERSION', '0.1.0' );
+define( 'CPTAP_VERSION', '0.1.1' );
 define( 'CPTAP_FILE', __FILE__ );
 define( 'CPTAP_PATH', plugin_dir_path( CPTAP_FILE ) );
 define( 'CPTAP_URL', plugin_dir_url( CPTAP_FILE ) );
@@ -324,45 +324,94 @@ add_filter(
 );
 
 add_filter(
-	'pre_get_document_title',
-	function( $title ) {
-		if ( ! $title ) {
-			return $title;
+	'wpseo_frontend_presentation',
+	function( $presentation, $context ) {
+		if ( 'Post_Type_Archive' !== $context->page_type ) {
+			return $presentation;
 		}
 
-		$page = cptap_get_archive_page();
+		if ( ! is_array( $presentation->source ) || empty( $presentation->source['post_type'] ) ) {
+			return $presentation;
+		}
+
+		$page = cptap_get_archive_page( $presentation->source['post_type'] );
 
 		if ( ! $page ) {
-			return $title;
+			return $presentation;
 		}
 
 		$seo_title = get_post_meta( $page, '_yoast_wpseo_title', true );
 
 		if ( ! $seo_title ) {
-			return $title;
+			return $presentation;
 		}
 
-		return $seo_title;
+		$presentation->title = $seo_title;
+
+		return $presentation;
 	},
-	20
+	10,
+	2
 );
 
 add_filter(
-	'Yoast\WP\SEO\open_graph_title_post-type-archive',
-	function( $title, $post_type ) {
+	'Yoast\WP\SEO\open_graph_description_post-type-archive',
+	function( $description, $post_type ) {
 		$page = cptap_get_archive_page( $post_type );
 
 		if ( ! $page ) {
-			return $title;
+			return $description;
 		}
 
-		$seo_title = get_post_meta( $page, '_yoast_wpseo_title', true );
+		$seo_description = get_post_meta( $page, '_yoast_wpseo_metadesc', true );
 
-		if ( ! $seo_title ) {
-			return $title;
+		if ( ! $seo_description ) {
+			return $description;
 		}
 
-		return $seo_title;
+		return $seo_description;
+	},
+	10,
+	2
+);
+
+add_filter(
+	'Yoast\WP\SEO\open_graph_image_post-type-archive',
+	function( $image, $post_type ) {
+		$page = cptap_get_archive_page( $post_type );
+
+		if ( ! $page ) {
+			return $image;
+		}
+
+		$seo_image = get_the_post_thumbnail_url( $page );
+
+		if ( ! $seo_image ) {
+			return $image;
+		}
+
+		return $seo_image;
+	},
+	10,
+	2
+);
+
+add_filter(
+	'Yoast\WP\SEO\open_graph_image_id_post-type-archive',
+	function( $image_id, $post_type ) {
+		$page = cptap_get_archive_page( $post_type );
+
+		if ( ! $page ) {
+			return $image_id;
+		}
+
+		$seo_image_id = get_post_thumbnail_id( $page );
+
+		if ( ! $seo_image_id ) {
+			return $image_id;
+		}
+
+		return $seo_image_id;
 	},
 	10,
 	2
