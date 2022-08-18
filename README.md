@@ -1,2 +1,3 @@
-# cpt-archive-pages
-Custom Post Type Archive Pages WordPress plugin
+# CPT Archive Pages
+
+Custom Post Type Archive Pages WordPress plugin - Associate post type archives with pages.
