@@ -3,7 +3,7 @@
  * Plugin Name: CPT Archive Pages
  * Plugin URI:  https://b7s.co
  * Description: Use pages for custom post type archives.
- * Version:     0.1.1
+ * Version:     0.1.2
  * Author:      Briantics, Inc.
  * Author URI:  https://b7s.co
  * Text Domain: cpt-archive-pages
@@ -14,7 +14,7 @@
  * @package CPTArchivePages
  */
 
-define( 'CPTAP_VERSION', '0.1.1' );
+define( 'CPTAP_VERSION', '0.1.2' );
 define( 'CPTAP_FILE', __FILE__ );
 define( 'CPTAP_PATH', plugin_dir_path( CPTAP_FILE ) );
 define( 'CPTAP_URL', plugin_dir_url( CPTAP_FILE ) );
@@ -326,11 +326,11 @@ add_filter(
 add_filter(
 	'wpseo_frontend_presentation',
 	function( $presentation, $context ) {
-		if ( 'Post_Type_Archive' !== $context->page_type ) {
+		if ( ! $context || empty( $context->page_type ) || 'Post_Type_Archive' !== $context->page_type ) {
 			return $presentation;
 		}
 
-		if ( ! is_array( $presentation->source ) || empty( $presentation->source['post_type'] ) ) {
+		if ( ! isset( $presentation->source ) || ! is_array( $presentation->source ) || empty( $presentation->source['post_type'] ) ) {
 			return $presentation;
 		}
 
@@ -340,13 +340,38 @@ add_filter(
 			return $presentation;
 		}
 
-		$seo_title = get_post_meta( $page, '_yoast_wpseo_title', true );
+		$seo_title        = get_post_meta( $page, '_yoast_wpseo_title', true );
+		$fb_title         = get_post_meta( $page, '_yoast_wpseo_opengraph-title', true );
+		$twitter_title    = get_post_meta( $page, '_yoast_wpseo_twitter-title', true );
+		$fb_image         = get_post_meta( $page, '_yoast_wpseo_opengraph-image', true );
+		$fb_image_id      = get_post_meta( $page, '_yoast_wpseo_opengraph-image-id', true );
+		$twitter_image    = get_post_meta( $page, '_yoast_wpseo_twitter-image', true );
+		$twitter_image_id = get_post_meta( $page, '_yoast_wpseo_twitter-image-id', true );
 
-		if ( ! $seo_title ) {
-			return $presentation;
+		// Adjust Titles.
+		if ( $seo_title ) {
+			$presentation->title = $seo_title;
+		}
+		if ( $fb_title ) {
+			$presentation->open_graph_title = $fb_title;
+		}
+		if ( $twitter_title ) {
+			$presentation->twitter_title = $twitter_title;
 		}
 
-		$presentation->title = $seo_title;
+		// Adjust Social Images.
+		if ( $fb_image ) {
+			$presentation->open_graph_image = $fb_image;
+		}
+		if ( $fb_image_id ) {
+			$presentation->open_graph_image_id = $fb_image_id;
+		}
+		if ( $twitter_image ) {
+			$presentation->twitter_image = $twitter_image;
+		}
+		if ( $twitter_image_id ) {
+			$presentation->twitter_image_id = $twitter_image_id;
+		}
 
 		return $presentation;
 	},

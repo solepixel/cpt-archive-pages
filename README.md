@@ -4,6 +4,10 @@ Custom Post Type Archive Pages WordPress plugin - Associate post type archives w
 
 ### Changelog
 
+#### 0.1.2
+
+* Better OG Title/Image support
+
 #### 0.1.1
 
 * Added Yoast OG Image/ID support.
