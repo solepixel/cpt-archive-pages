@@ -3,7 +3,7 @@
  * Plugin Name: CPT Archive Pages
  * Plugin URI:  https://b7s.co
  * Description: Use pages for custom post type archives.
- * Version:     0.0.1
+ * Version:     0.0.2
  * Author:      Briantics, Inc.
  * Author URI:  https://b7s.co
  * Text Domain: cpt-archive-pages
@@ -14,7 +14,7 @@
  * @package CPTArchivePages
  */
 
-define( 'CPTAP_VERSION', '0.0.1' );
+define( 'CPTAP_VERSION', '0.0.2' );
 define( 'CPTAP_FILE', __FILE__ );
 define( 'CPTAP_PATH', plugin_dir_path( CPTAP_FILE ) );
 define( 'CPTAP_URL', plugin_dir_url( CPTAP_FILE ) );
@@ -60,6 +60,7 @@ function cptap_get_post_archives() {
 					'acf-field',
 					'oembed_cache',
 					'user_request',
+					'cookielawinfo',
 				)
 			)
 		)
@@ -305,4 +306,43 @@ add_filter(
 	},
 	10,
 	2
+);
+
+add_filter(
+	'post_type_archive_title',
+	function( $title, $post_type ) {
+		$page = cptap_get_archive_page( $post_type );
+
+		if ( ! $page ) {
+			return $title;
+		}
+
+		return get_the_title( $page );
+	},
+	10,
+	2
+);
+
+add_filter(
+	'pre_get_document_title',
+	function( $title ) {
+		if ( ! $title ) {
+			return $title;
+		}
+
+		$page = cptap_get_archive_page();
+
+		if ( ! $page ) {
+			return $title;
+		}
+
+		$seo_title = get_post_meta( $page, '_yoast_wpseo_title', true );
+
+		if ( ! $seo_title ) {
+			return $title;
+		}
+
+		return $seo_title;
+	},
+	20
 );
