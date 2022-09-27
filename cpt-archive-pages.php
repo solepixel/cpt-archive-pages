@@ -3,7 +3,7 @@
  * Plugin Name: CPT Archive Pages
  * Plugin URI:  https://b7s.co
  * Description: Use pages for custom post type archives.
- * Version:     0.1.3
+ * Version:     0.1.4
  * Author:      Briantics, Inc.
  * Author URI:  https://b7s.co
  * Text Domain: cpt-archive-pages
@@ -14,7 +14,7 @@
  * @package CPTArchivePages
  */
 
-define( 'CPTAP_VERSION', '0.1.3' );
+define( 'CPTAP_VERSION', '0.1.4' );
 define( 'CPTAP_FILE', __FILE__ );
 define( 'CPTAP_PATH', plugin_dir_path( CPTAP_FILE ) );
 define( 'CPTAP_URL', plugin_dir_url( CPTAP_FILE ) );
@@ -91,6 +91,14 @@ function cptap_get_post_archives() {
 function cptap_get_archive_page( $post_type = false ) {
 	if ( ! $post_type ) {
 		$post_type = get_post_type();
+	}
+
+	if ( ! $post_type && is_post_type_archive() ) {
+		$queried_object = get_queried_object();
+
+		if ( is_a( $queried_object, 'WP_Post_Type' ) ) {
+			$post_type = $queried_object->name;
+		}
 	}
 
 	if ( ! $post_type ) {
@@ -290,6 +298,7 @@ add_filter(
 			if ( $args['has_archive'] ) {
 				$args['original_archive'] = $args['has_archive'];
 			}
+
 			$args['has_archive'] = $archive->post_name;
 		}
 
@@ -325,3 +334,22 @@ add_filter(
 	10,
 	2
 );
+
+/**
+ * Check if post type has posts.
+ *
+ * @param string $post_type The Post Type.
+ *
+ * @return bool
+ */
+function cptap_archive_has_posts( $post_type ) {
+	$query = new WP_Query(
+		array(
+			'post_type'      => $post_type,
+			'posts_per_page' => 1,
+			'post_status'    => 'publish',
+		)
+	);
+
+	return $query->have_posts();
+}
